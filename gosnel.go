@@ -2,6 +2,9 @@ package gosnel
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -9,9 +12,12 @@ import (
 const version = "1.0.0"
 
 type Gosnel struct {
-	AppName string
-	Debug   bool
-	Version string
+	AppName  string
+	Debug    bool
+	Version  string
+	ErrorLog *log.Logger
+	InfoLog  *log.Logger
+	RootPath string
 }
 
 func (g *Gosnel) New(rootPath string) error {
@@ -36,6 +42,14 @@ func (g *Gosnel) New(rootPath string) error {
 		return err
 	}
 
+	// create loggers
+	infoLog, errorLog := g.startLoggers()
+	g.InfoLog = infoLog
+	g.ErrorLog = errorLog
+
+	g.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
+	g.Version = version
+
 	return nil
 }
 
@@ -57,4 +71,14 @@ func (g *Gosnel) checkDotEnv(path string) error {
 		return err
 	}
 	return nil
+}
+
+func (g *Gosnel) startLoggers() (*log.Logger, *log.Logger) {
+	var infoLog *log.Logger
+	var errorLog *log.Logger
+
+	infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
+	return infoLog, errorLog
 }
