@@ -1,5 +1,11 @@
 package gosnel
 
+import (
+	"fmt"
+
+	"github.com/joho/godotenv"
+)
+
 const version = "1.0.0"
 
 type Gosnel struct {
@@ -19,6 +25,17 @@ func (g *Gosnel) New(rootPath string) error {
 		return err
 	}
 
+	err = g.checkDotEnv(rootPath)
+	if err != nil {
+		return err
+	}
+
+	// read .env file
+	err = godotenv.Load(rootPath + "/.env")
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -30,6 +47,14 @@ func (g *Gosnel) Init(p initPaths) error {
 		if err != nil {
 			return nil
 		}
+	}
+	return nil
+}
+
+func (g *Gosnel) checkDotEnv(path string) error {
+	err := g.CreateFileIfNotExist(fmt.Sprintf("%s/.env", path))
+	if err != nil {
+		return err
 	}
 	return nil
 }

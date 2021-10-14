@@ -24,7 +24,7 @@
 /Godeps/
 
 ### VisualStudioCode ###
-.vscode
+.vscode/
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -45,5 +45,9 @@
 # Ignore all local history of files
 .history
 .ionide
+
+.idea
+coverage.out
+dist/*
 
 # End of https://www.toptal.com/developers/gitignore/api/go,visualstudiocode
