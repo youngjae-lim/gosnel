@@ -18,6 +18,12 @@ type Gosnel struct {
 	ErrorLog *log.Logger
 	InfoLog  *log.Logger
 	RootPath string
+	config   config
+}
+
+type config struct {
+	port     string
+	renderer string
 }
 
 func (g *Gosnel) New(rootPath string) error {
@@ -49,6 +55,12 @@ func (g *Gosnel) New(rootPath string) error {
 
 	g.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
 	g.Version = version
+	g.RootPath = rootPath
+
+	g.config = config{
+		port:     os.Getenv("PORT"),
+		renderer: os.Getenv("RENDERER"),
+	}
 
 	return nil
 }
