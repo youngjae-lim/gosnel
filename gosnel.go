@@ -3,9 +3,12 @@ package gosnel
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
+	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 )
 
@@ -18,6 +21,7 @@ type Gosnel struct {
 	ErrorLog *log.Logger
 	InfoLog  *log.Logger
 	RootPath string
+	Routes   *chi.Mux
 	config   config
 }
 
@@ -56,6 +60,7 @@ func (g *Gosnel) New(rootPath string) error {
 	g.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
 	g.Version = version
 	g.RootPath = rootPath
+	g.Routes = g.routes().(*chi.Mux)
 
 	g.config = config{
 		port:     os.Getenv("PORT"),
@@ -65,6 +70,7 @@ func (g *Gosnel) New(rootPath string) error {
 	return nil
 }
 
+// Init creates necessary directories for our Gosnel application
 func (g *Gosnel) Init(p initPaths) error {
 	root := p.rootPath
 	for _, path := range p.folderNames {
@@ -75,6 +81,22 @@ func (g *Gosnel) Init(p initPaths) error {
 		}
 	}
 	return nil
+}
+
+// ListenAndServe starts the web server
+func (g *Gosnel) ListenAndServe() {
+	srv := &http.Server{
+		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
+		ErrorLog:     g.ErrorLog,
+		Handler:      g.routes(),
+		IdleTimeout:  30 * time.Second,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 600 * time.Second,
+	}
+
+	g.InfoLog.Printf("Listening on port %s", os.Getenv("PORT"))
+	err := srv.ListenAndServe()
+	g.ErrorLog.Fatal(err)
 }
 
 func (g *Gosnel) checkDotEnv(path string) error {
