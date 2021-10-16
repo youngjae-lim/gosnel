@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
+	"github.com/youngjae-lim/gosnel/render"
 )
 
 const version = "1.0.0"
@@ -22,6 +23,7 @@ type Gosnel struct {
 	InfoLog  *log.Logger
 	RootPath string
 	Routes   *chi.Mux
+	Render   *render.Render
 	config   config
 }
 
@@ -66,6 +68,8 @@ func (g *Gosnel) New(rootPath string) error {
 		port:     os.Getenv("PORT"),
 		renderer: os.Getenv("RENDERER"),
 	}
+
+	g.Render = g.createRenderer(g)
 
 	return nil
 }
@@ -115,4 +119,14 @@ func (g *Gosnel) startLoggers() (*log.Logger, *log.Logger) {
 	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	return infoLog, errorLog
+}
+
+func (g *Gosnel) createRenderer(gos *Gosnel) *render.Render {
+	myRenderer := render.Render{
+		Renderer: gos.config.renderer,
+		RootPath: gos.RootPath,
+		Port:     gos.config.port,
+	}
+
+	return &myRenderer
 }
