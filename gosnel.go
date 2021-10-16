@@ -69,7 +69,7 @@ func (g *Gosnel) New(rootPath string) error {
 		renderer: os.Getenv("RENDERER"),
 	}
 
-	g.Render = g.createRenderer(g)
+	g.createRenderer()
 
 	return nil
 }
@@ -92,7 +92,7 @@ func (g *Gosnel) ListenAndServe() {
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
 		ErrorLog:     g.ErrorLog,
-		Handler:      g.routes(),
+		Handler:      g.Routes,
 		IdleTimeout:  30 * time.Second,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 600 * time.Second,
@@ -121,12 +121,11 @@ func (g *Gosnel) startLoggers() (*log.Logger, *log.Logger) {
 	return infoLog, errorLog
 }
 
-func (g *Gosnel) createRenderer(gos *Gosnel) *render.Render {
+func (g *Gosnel) createRenderer() {
 	myRenderer := render.Render{
-		Renderer: gos.config.renderer,
-		RootPath: gos.RootPath,
-		Port:     gos.config.port,
+		Renderer: g.config.renderer,
+		RootPath: g.RootPath,
+		Port:     g.config.port,
 	}
-
-	return &myRenderer
+	g.Render = &myRenderer
 }
