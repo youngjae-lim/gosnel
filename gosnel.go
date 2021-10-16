@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/CloudyKit/jet/v6"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 	"github.com/youngjae-lim/gosnel/render"
@@ -24,6 +25,7 @@ type Gosnel struct {
 	RootPath string
 	Routes   *chi.Mux
 	Render   *render.Render
+	JetViews *jet.Set
 	config   config
 }
 
@@ -68,6 +70,13 @@ func (g *Gosnel) New(rootPath string) error {
 		port:     os.Getenv("PORT"),
 		renderer: os.Getenv("RENDERER"),
 	}
+
+	var views = jet.NewSet(
+		jet.NewOSFileSystemLoader(fmt.Sprintf("%s/views", rootPath)),
+		jet.InDevelopmentMode(),
+	)
+
+	g.JetViews = views
 
 	g.createRenderer()
 
@@ -126,6 +135,7 @@ func (g *Gosnel) createRenderer() {
 		Renderer: g.config.renderer,
 		RootPath: g.RootPath,
 		Port:     g.config.port,
+		JetViews: g.JetViews,
 	}
 	g.Render = &myRenderer
 }
