@@ -79,6 +79,7 @@ func (g *Gosnel) New(rootPath string) error {
 			lifetime: os.Getenv("COOKIE_LIFETIME"),
 			persist:  os.Getenv("COOKIE_PERSIST"),
 			secure:   os.Getenv("COOKIE_SECURE"),
+			domain:   os.Getenv("COOKIE_DOMAIN"),
 		},
 		sessionType: os.Getenv("SESSION_TYPE"),
 	}
@@ -89,6 +90,7 @@ func (g *Gosnel) New(rootPath string) error {
 		CookieLifetime: g.config.cookie.lifetime,
 		CookiePersist:  g.config.cookie.persist,
 		CookieSecure:   g.config.cookie.secure,
+		CookieDomain:   g.config.cookie.domain,
 		SessionType:    g.config.sessionType,
 	}
 
