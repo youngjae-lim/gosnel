@@ -2,6 +2,7 @@ package gosnel
 
 import (
 	"database/sql"
+	"fmt"
 
 	_ "github.com/jackc/pgconn"
 	_ "github.com/jackc/pgx/v4"
@@ -13,6 +14,8 @@ func (g *Gosnel) OpenDB(dbType, dsn string) (*sql.DB, error) {
 		dbType = "pgx"
 	}
 
+	fmt.Println(dsn)
+	
 	db, err := sql.Open(dbType, dsn)
 	if err != nil {
 		return nil, err

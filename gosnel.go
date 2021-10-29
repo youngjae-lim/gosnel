@@ -187,12 +187,13 @@ func (g *Gosnel) createRenderer() {
 	g.Render = &myRenderer
 }
 
+// BuildDSN builds the datasource name for our database, and returns it as a string
 func (g *Gosnel) BuildDSN() string {
 	var dsn string
 
 	switch os.Getenv("DATABASE_TYPE") {
 	case "postgres", "postgresql":
-		dsn = fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=%s timezone=UTC connect_timeout=5",
+		dsn = fmt.Sprintf("host=%s port=%s user=%s database=%s sslmode=%s timezone=UTC connect_timeout=5",
 			os.Getenv("DATABASE_HOST"),
 			os.Getenv("DATABASE_PORT"),
 			os.Getenv("DATABASE_USER"),
@@ -200,6 +201,7 @@ func (g *Gosnel) BuildDSN() string {
 			os.Getenv("DATABASE_SSL_MODE"),
 		)
 
+		// postgres://postgres:password@0.0.0.0:5432/gosnel?sslmode=disable
 		if os.Getenv("DATABASE_PASS") != "" {
 			dsn = fmt.Sprintf("%s password=%s", dsn, os.Getenv("DATABASE_PASS"))
 		}
