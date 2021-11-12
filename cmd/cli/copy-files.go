@@ -24,7 +24,7 @@ func copyFileFromTemplate(templatePath, targetFile string) error {
 	return nil
 }
 
-func copyDataToFile(data []byte, to string) error {
+func copyDataToFile(data []byte, to string) error {
 	err := ioutil.WriteFile(to, data, 0644)
 	if err != nil {
 		return err
