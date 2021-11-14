@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// setup sets a rootpath of cli application and database type(postgres or mysql)
 func setup() {
 	err := godotenv.Load()
 	if err != nil {
