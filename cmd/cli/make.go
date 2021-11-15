@@ -3,7 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"strings"
 	"time"
+
+	"github.com/iancoleman/strcase"
 )
 
 func doMake(arg2, arg3 string) error {
@@ -11,7 +15,7 @@ func doMake(arg2, arg3 string) error {
 	case "migration":
 		dbType := gos.DB.DbType
 		if arg3 == "" {
-			exitGracefully(errors.New("you must give the migration name"))
+			exitGracefully(errors.New("you must give the migration a name"))
 		}
 
 		fileName := fmt.Sprintf("%d_%s", time.Now().UnixMicro(), arg3)
@@ -30,6 +34,28 @@ func doMake(arg2, arg3 string) error {
 		}
 	case "auth":
 		err := doAuth()
+		if err != nil {
+			exitGracefully(err)
+		}
+	case "handler":
+		if arg3 == "" {
+			exitGracefully(errors.New("you must give the handler a name"))
+		}
+
+		fileName := gos.RootPath + "/handlers/" + strings.ToLower(arg3) + ".go"
+		if fileExists(fileName) {
+			exitGracefully(errors.New(fileName + " already exists!"))
+		}
+
+		data, err := templateFS.ReadFile("templates/handlers/handler.go.txt")
+		if err != nil {
+			exitGracefully(err)
+		}
+
+		handler := string(data)
+		handler = strings.ReplaceAll(handler, "$HANDLERNAME$", strcase.ToCamel(arg3))
+
+		err = ioutil.WriteFile(fileName, []byte(handler), 0644)
 		if err != nil {
 			exitGracefully(err)
 		}
