@@ -61,6 +61,7 @@ func showHelp() {
 
 	help			- show the help commands
 	version			- print application version
+	make auth		- creates and runs migrations for authentication tables, and creates models and middlewares
 	migrate			- runs all up migrations that have not been run previsouly
 	migrate down		- reverses the most recent migration
 	migrate reset		- runs all down migrations in reverse order, and then all up migrations
