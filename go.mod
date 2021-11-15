@@ -36,4 +36,7 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 )
 
-require github.com/iancoleman/strcase v0.2.0 // indirect
+require (
+	github.com/gertd/go-pluralize v0.1.7 // indirect
+	github.com/iancoleman/strcase v0.2.0 // indirect
+)
