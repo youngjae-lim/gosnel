@@ -112,6 +112,7 @@ func (g *Gosnel) New(rootPath string) error {
 		CookieSecure:   g.config.cookie.secure,
 		CookieDomain:   g.config.cookie.domain,
 		SessionType:    g.config.sessionType,
+		DBPool:         g.DB.Pool,
 	}
 
 	g.Session = sess.InitSession()

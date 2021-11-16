@@ -37,6 +37,8 @@ require (
 )
 
 require (
+	github.com/alexedwards/scs/mysqlstore v0.0.0-20211102093144-4fbbc167f2c1 // indirect
+	github.com/alexedwards/scs/postgresstore v0.0.0-20211102093144-4fbbc167f2c1 // indirect
 	github.com/gertd/go-pluralize v0.1.7 // indirect
 	github.com/iancoleman/strcase v0.2.0 // indirect
 )
