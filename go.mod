@@ -39,6 +39,7 @@ require (
 require (
 	github.com/alexedwards/scs/mysqlstore v0.0.0-20211102093144-4fbbc167f2c1 // indirect
 	github.com/alexedwards/scs/postgresstore v0.0.0-20211102093144-4fbbc167f2c1 // indirect
+	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/gertd/go-pluralize v0.1.7 // indirect
 	github.com/iancoleman/strcase v0.2.0 // indirect
 )
