@@ -22,6 +22,7 @@ func (g *Gosnel) Validator(data url.Values) *Validation {
 	}
 }
 
+// Valid returns false when there is at least one error caught
 func (v *Validation) Valid() bool {
 	return len(v.Errors) == 0
 }
@@ -46,6 +47,7 @@ func (v *Validation) Required(r *http.Request, fields ...string) {
 	}
 }
 
+// Check adds an error when a custom validation rule fails
 func (v *Validation) Check(ok bool, key, message string) {
 	if !ok {
 		v.AddError(key, message)
