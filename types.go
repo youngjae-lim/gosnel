@@ -28,3 +28,9 @@ type Database struct {
 	DbType string
 	Pool   *sql.DB
 }
+
+type redisConfig struct {
+	host     string
+	password string
+	prefix   string
+}

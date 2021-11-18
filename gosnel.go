@@ -11,7 +11,9 @@ import (
 	"github.com/CloudyKit/jet/v6"
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
+	"github.com/gomodule/redigo/redis"
 	"github.com/joho/godotenv"
+	"github.com/youngjae-lim/gosnel/cache"
 	"github.com/youngjae-lim/gosnel/render"
 	"github.com/youngjae-lim/gosnel/session"
 )
@@ -32,6 +34,7 @@ type Gosnel struct {
 	JetViews      *jet.Set
 	config        config
 	EncryptionKey string
+	Cache         cache.Cache
 }
 
 type config struct {
@@ -40,6 +43,7 @@ type config struct {
 	cookie      cookieConfig
 	sessionType string
 	database    databaseConfig
+	redis       redisConfig
 }
 
 func (g *Gosnel) New(rootPath string) error {
@@ -67,7 +71,7 @@ func (g *Gosnel) New(rootPath string) error {
 	// create loggers
 	infoLog, errorLog := g.startLoggers()
 
-	// connect to database
+	// connect to database if database type is specified in the .env
 	if os.Getenv("DATABASE_TYPE") != "" {
 		db, err := g.OpenDB(os.Getenv("DATABASE_TYPE"), g.BuildDSN())
 		if err != nil {
@@ -78,6 +82,12 @@ func (g *Gosnel) New(rootPath string) error {
 			DbType: os.Getenv("DATABASE_TYPE"),
 			Pool:   db,
 		}
+	}
+
+	// create a client redis cache if redis is specified in the .env
+	if os.Getenv("CACHE") == "redis" {
+		myRedisCache := g.createClientRedisCache()
+		g.Cache = myRedisCache
 	}
 
 	g.InfoLog = infoLog
@@ -102,6 +112,11 @@ func (g *Gosnel) New(rootPath string) error {
 		database: databaseConfig{
 			dsn:      g.BuildDSN(),
 			database: os.Getenv("DATABASE_TYPE"),
+		},
+		redis: redisConfig{
+			host:     os.Getenv("REDIS_HOST"),
+			password: os.Getenv("REDIS_PASSWORD"),
+			prefix:   os.Getenv("REDIS_PREFIX"),
 		},
 	}
 
@@ -189,6 +204,32 @@ func (g *Gosnel) createRenderer() {
 		Session:  g.Session,
 	}
 	g.Render = &myRenderer
+}
+
+func (g *Gosnel) createClientRedisCache() *cache.RedisCache {
+	cacheClient := cache.RedisCache{
+		Conn:   g.createRedisPool(),
+		Prefix: g.config.redis.prefix,
+	}
+	return &cacheClient
+}
+
+func (g *Gosnel) createRedisPool() *redis.Pool {
+	return &redis.Pool{
+		MaxIdle:     50,
+		MaxActive:   10000,
+		IdleTimeout: 240 * time.Second,
+		Dial: func() (redis.Conn, error) {
+			return redis.Dial(
+				"tcp",
+				g.config.redis.host,
+				redis.DialPassword(g.config.redis.password))
+		},
+		TestOnBorrow: func(conn redis.Conn, t time.Time) error {
+			_, err := conn.Do("PING")
+			return err
+		},
+	}
 }
 
 // BuildDSN builds the datasource name for our database, and returns it as a string
