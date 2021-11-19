@@ -39,8 +39,11 @@ require (
 require (
 	github.com/alexedwards/scs/mysqlstore v0.0.0-20211102093144-4fbbc167f2c1 // indirect
 	github.com/alexedwards/scs/postgresstore v0.0.0-20211102093144-4fbbc167f2c1 // indirect
+	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
+	github.com/alicebob/miniredis/v2 v2.16.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/gertd/go-pluralize v0.1.7 // indirect
 	github.com/gomodule/redigo v1.8.5 // indirect
 	github.com/iancoleman/strcase v0.2.0 // indirect
+	github.com/yuin/gopher-lua v0.0.0-20200816102855-ee81675732da // indirect
 )
