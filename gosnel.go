@@ -20,6 +20,8 @@ import (
 
 const version = "1.0.0"
 
+var myRedisCache *cache.RedisCache
+
 type Gosnel struct {
 	AppName       string
 	Debug         bool
@@ -85,8 +87,8 @@ func (g *Gosnel) New(rootPath string) error {
 	}
 
 	// create a client redis cache if redis is specified in the .env
-	if os.Getenv("CACHE") == "redis" {
-		myRedisCache := g.createClientRedisCache()
+	if os.Getenv("CACHE") == "redis" || os.Getenv("SESSION_TYPE") == "redis" {
+		myRedisCache = g.createClientRedisCache()
 		g.Cache = myRedisCache
 	}
 
@@ -128,7 +130,13 @@ func (g *Gosnel) New(rootPath string) error {
 		CookieSecure:   g.config.cookie.secure,
 		CookieDomain:   g.config.cookie.domain,
 		SessionType:    g.config.sessionType,
-		DBPool:         g.DB.Pool,
+	}
+
+	switch g.config.sessionType {
+	case "redis":
+		sess.RedisPool = myRedisCache.Conn
+	case "mysql", "postgres", "postgresql", "mariadb":
+		sess.DBPool = g.DB.Pool
 	}
 
 	g.Session = sess.InitSession()

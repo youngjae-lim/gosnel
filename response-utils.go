@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 )
 
+// ReadJSON reads json from http request body
 func (g *Gosnel) ReadJSON(w http.ResponseWriter, r *http.Request, data interface{}) error {
 	maxBytes := 1048576 // 1 mb
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
