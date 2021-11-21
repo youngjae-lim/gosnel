@@ -46,5 +46,6 @@ require (
 	github.com/gertd/go-pluralize v0.1.7 // indirect
 	github.com/gomodule/redigo v1.8.5 // indirect
 	github.com/iancoleman/strcase v0.2.0 // indirect
+	github.com/justinas/nosurf v1.1.1 // indirect
 	github.com/yuin/gopher-lua v0.0.0-20200816102855-ee81675732da // indirect
 )
