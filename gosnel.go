@@ -24,6 +24,8 @@ const version = "1.0.0"
 
 var myRedisCache *cache.RedisCache
 var myBadgerCache *cache.BadgerCache
+var redisPool *redis.Pool
+var badgerConn *badger.DB
 
 type Gosnel struct {
 	AppName       string
@@ -94,12 +96,18 @@ func (g *Gosnel) New(rootPath string) error {
 	if os.Getenv("CACHE") == "redis" || os.Getenv("SESSION_TYPE") == "redis" {
 		myRedisCache = g.createClientRedisCache()
 		g.Cache = myRedisCache
+		redisPool = myRedisCache.Conn
 	}
+
+	// create a new cron job runner
+	scheduler := cron.New()
+	g.Scheduler = scheduler
 
 	// create a client badger cache if badger is specified in the .env
 	if os.Getenv("CACHE") == "badger" {
 		myBadgerCache = g.createClientBadgerCache()
 		g.Cache = myBadgerCache
+		badgerConn = myBadgerCache.Conn
 
 		// run a garbage collect on a daily basis
 		_, err = g.Scheduler.AddFunc("@daily", func() {
@@ -202,7 +210,17 @@ func (g *Gosnel) ListenAndServe() {
 		WriteTimeout: 600 * time.Second,
 	}
 
-	defer g.DB.Pool.Close()
+	if g.DB.Pool != nil {
+		defer g.DB.Pool.Close()
+	}
+
+	if redisPool != nil {
+		defer redisPool.Close()
+	}
+
+	if badgerConn != nil {
+		defer badgerConn.Close()
+	}
 
 	g.InfoLog.Printf("Listening on port %s", os.Getenv("PORT"))
 	err := srv.ListenAndServe()
@@ -272,7 +290,7 @@ func (g *Gosnel) createRedisPool() *redis.Pool {
 }
 
 func (g *Gosnel) createBadgerConn() *badger.DB {
-	db, err := badger.Open(badger.DefaultOptions(c.RootPath + "/tmp/badger"))
+	db, err := badger.Open(badger.DefaultOptions(g.RootPath + "/tmp/badger"))
 	if err != nil {
 		return nil
 	}
