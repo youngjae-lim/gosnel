@@ -10,9 +10,11 @@ import (
 
 	"github.com/CloudyKit/jet/v6"
 	"github.com/alexedwards/scs/v2"
+	"github.com/dgraph-io/badger/v3"
 	"github.com/go-chi/chi/v5"
 	"github.com/gomodule/redigo/redis"
 	"github.com/joho/godotenv"
+	"github.com/robfig/cron/v3"
 	"github.com/youngjae-lim/gosnel/cache"
 	"github.com/youngjae-lim/gosnel/render"
 	"github.com/youngjae-lim/gosnel/session"
@@ -21,6 +23,7 @@ import (
 const version = "1.0.0"
 
 var myRedisCache *cache.RedisCache
+var myBadgerCache *cache.BadgerCache
 
 type Gosnel struct {
 	AppName       string
@@ -37,6 +40,7 @@ type Gosnel struct {
 	config        config
 	EncryptionKey string
 	Cache         cache.Cache
+	Scheduler     *cron.Cron
 }
 
 type config struct {
@@ -90,6 +94,20 @@ func (g *Gosnel) New(rootPath string) error {
 	if os.Getenv("CACHE") == "redis" || os.Getenv("SESSION_TYPE") == "redis" {
 		myRedisCache = g.createClientRedisCache()
 		g.Cache = myRedisCache
+	}
+
+	// create a client badger cache if badger is specified in the .env
+	if os.Getenv("CACHE") == "badger" {
+		myBadgerCache = g.createClientBadgerCache()
+		g.Cache = myBadgerCache
+
+		// run a garbage collect on a daily basis
+		_, err = g.Scheduler.AddFunc("@daily", func() {
+			_ = myBadgerCache.Conn.RunValueLogGC(0.7)
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	g.InfoLog = infoLog
@@ -228,6 +246,13 @@ func (g *Gosnel) createClientRedisCache() *cache.RedisCache {
 	return &cacheClient
 }
 
+func (g *Gosnel) createClientBadgerCache() *cache.BadgerCache {
+	cacheClient := cache.BadgerCache{
+		Conn: g.createBadgerConn(),
+	}
+	return &cacheClient
+}
+
 func (g *Gosnel) createRedisPool() *redis.Pool {
 	return &redis.Pool{
 		MaxIdle:     50,
@@ -244,6 +269,14 @@ func (g *Gosnel) createRedisPool() *redis.Pool {
 			return err
 		},
 	}
+}
+
+func (g *Gosnel) createBadgerConn() *badger.DB {
+	db, err := badger.Open(badger.DefaultOptions(c.RootPath + "/tmp/badger"))
+	if err != nil {
+		return nil
+	}
+	return db
 }
 
 // BuildDSN builds the datasource name for our database, and returns it as a string
