@@ -14,7 +14,7 @@ type BadgerCache struct {
 func (b *BadgerCache) Has(str string) (bool, error) {
 	_, err := b.Get(str)
 	if err != nil {
-		return false, err
+		return false, nil
 	}
 	return true, nil
 }
@@ -122,6 +122,7 @@ func (b *BadgerCache) emptyByMatch(str string) error {
 		opts.AllVersions = false
 		opts.PrefetchValues = false
 		it := txn.NewIterator(opts)
+		defer it.Close()
 
 		keysForDelete := make([][]byte, 0, collectSize)
 		keysColleceted := 0
