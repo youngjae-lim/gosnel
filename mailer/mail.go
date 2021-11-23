@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"io/ioutil"
+	"path/filepath"
 	"time"
 
+	apimail "github.com/ainsleyclark/go-mail"
 	"github.com/vanng822/go-premailer/premailer"
 	mail "github.com/xhit/go-simple-mail/v2"
 )
@@ -37,11 +40,16 @@ type Message struct {
 	Data        interface{}
 }
 
+// Result contains information regarding the status of the sent email message
 type Result struct {
 	Success bool
 	Error   error
 }
 
+// ListenForMail listens to the mail channel and sends mail
+// when it receives a payload. It runs contiually in the background,
+// and sends error/success messages back on the Results channel.
+// Note that if api and api key are set, it will prefer using an api to send mail.
 func (m *Mail) ListenForMail() {
 	for {
 		msg := <-m.Jobs
@@ -55,10 +63,100 @@ func (m *Mail) ListenForMail() {
 }
 
 func (m *Mail) Send(msg Message) error {
-	// TODO: are we using an API or SMTP?
+	if len(m.API) > 0 && len(m.APIKey) > 0 && len(m.APIUrl) > 0 && m.API != "smtp" {
+		m.ChooseAPI(msg)
+	}
 	return m.SendSMTPMessage(msg)
 }
 
+func (m *Mail) ChooseAPI(msg Message) error {
+	switch m.API {
+	case "mailgun", "sparkpost", "sendgrid":
+		return m.SendUsingAPI(msg, m.API)
+	default:
+		return fmt.Errorf("unknown api %s; only mailgun, sparkpost or sendgrid accpected", m.API)
+	}
+}
+
+func (m *Mail) SendUsingAPI(msg Message, transport string) error {
+	if msg.From == "" {
+		msg.From = m.FromAddress
+	}
+
+	if msg.FromName == "" {
+		msg.FromName = m.FromName
+	}
+
+	cfg := apimail.Config{
+		URL:         m.APIUrl,
+		APIKey:      m.APIKey,
+		Domain:      m.Domain,
+		FromAddress: msg.From,
+		FromName:    msg.FromName,
+	}
+
+	driver, err := apimail.NewClient(transport, cfg)
+	if err != nil {
+		return err
+	}
+
+	formattedMessage, err := m.buildHTMLMessage(msg)
+	if err != nil {
+		return err
+	}
+
+	plainMessage, err := m.buildPlainTextMessage(msg)
+	if err != nil {
+		return err
+	}
+
+	tx := &apimail.Transmission{
+		Recipients: []string{msg.To},
+		Subject:    msg.Subject,
+		HTML:       formattedMessage,
+		PlainText:  plainMessage,
+	}
+
+	// add attachments
+	err = m.addAPIAttachments(msg, tx)
+	if err != nil {
+		return err
+	}
+
+	_, err = driver.Send(tx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Mail) addAPIAttachments(msg Message, tx *apimail.Transmission) error {
+	if len(msg.Attachments) > 0 {
+		var attachments []apimail.Attachment
+
+		for _, x := range msg.Attachments {
+			var attach apimail.Attachment
+			content, err := ioutil.ReadFile(x)
+			if err != nil {
+				return err
+			}
+
+			fileName := filepath.Base(x)
+			attach.Filename = fileName
+			attach.Bytes = content
+			attachments = append(attachments, attach)
+		}
+
+		tx.Attachments = attachments
+	}
+
+	return nil
+}
+
+// SendSMTPMessage builds and sends an email message using SMTP.
+// This is called by ListenForMail, and can also be called
+// directly when necessary.
 func (m *Mail) SendSMTPMessage(msg Message) error {
 	formattedMessage, err := m.buildHTMLMessage(msg)
 	if err != nil {
@@ -71,6 +169,8 @@ func (m *Mail) SendSMTPMessage(msg Message) error {
 	}
 
 	server := mail.NewSMTPClient()
+
+	// SMTP Server
 	server.Host = m.Host
 	server.Port = m.Port
 	server.Username = m.Username
@@ -80,11 +180,13 @@ func (m *Mail) SendSMTPMessage(msg Message) error {
 	server.ConnectTimeout = 10 * time.Second
 	server.SendTimeout = 10 * time.Second
 
+	// SMTP Client
 	smtpClient, err := server.Connect()
 	if err != nil {
 		return err
 	}
 
+	// New email with html/text based
 	email := mail.NewMSG()
 	email.SetFrom(msg.From).
 		AddTo(msg.To).
@@ -93,12 +195,14 @@ func (m *Mail) SendSMTPMessage(msg Message) error {
 	email.SetBody(mail.TextHTML, formattedMessage)
 	email.AddAlternative(mail.TextPlain, plainMessage)
 
+	// Add any attchments
 	if len(msg.Attachments) > 0 {
 		for _, x := range msg.Attachments {
 			email.AddAttachment(x)
 		}
 	}
 
+	// call Send and pass the client
 	err = email.Send(smtpClient)
 	if err != nil {
 		return nil
