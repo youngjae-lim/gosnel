@@ -16,6 +16,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
 	"github.com/youngjae-lim/gosnel/cache"
+	"github.com/youngjae-lim/gosnel/mailer"
 	"github.com/youngjae-lim/gosnel/render"
 	"github.com/youngjae-lim/gosnel/session"
 )
@@ -43,6 +44,7 @@ type Gosnel struct {
 	EncryptionKey string
 	Cache         cache.Cache
 	Scheduler     *cron.Cron
+	Mail          mailer.Mail
 }
 
 type config struct {
@@ -57,7 +59,7 @@ type config struct {
 func (g *Gosnel) New(rootPath string) error {
 	pathConfig := initPaths{
 		rootPath:    rootPath,
-		folderNames: []string{"handlers", "migrations", "views", "data", "public", "tmp", "logs", "middleware"},
+		folderNames: []string{"handlers", "migrations", "views", "mail", "data", "public", "tmp", "logs", "middleware"},
 	}
 
 	err := g.Init(pathConfig)
@@ -120,7 +122,7 @@ func (g *Gosnel) New(rootPath string) error {
 
 	g.InfoLog = infoLog
 	g.ErrorLog = errorLog
-
+	g.Mail = g.createMailer()
 	g.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
 	g.Version = version
 	g.RootPath = rootPath
@@ -182,6 +184,7 @@ func (g *Gosnel) New(rootPath string) error {
 	}
 
 	g.createRenderer()
+	go g.Mail.ListenForMail()
 
 	return nil
 }
@@ -254,6 +257,27 @@ func (g *Gosnel) createRenderer() {
 		Session:  g.Session,
 	}
 	g.Render = &myRenderer
+}
+
+func (g *Gosnel) createMailer() mailer.Mail {
+	port, _ := strconv.Atoi(os.Getenv("SMTP_PORT"))
+	m := mailer.Mail{
+		Domain:      os.Getenv("MAIL_DOMAIN"),
+		Templates:   g.RootPath + "/mail",
+		Host:        os.Getenv("SMTP_HOST"),
+		Port:        port,
+		Username:    os.Getenv("SMTP_USERNAME"),
+		Password:    os.Getenv("SMTP_PASSWORD"),
+		Encryption:  os.Getenv("SMTP_ENCRYPTION"),
+		FromAddress: os.Getenv("FROM_ADDRESS"),
+		FromName:    os.Getenv("FROM_NAME"),
+		Jobs:        make(chan mailer.Message, 20),
+		Results:     make(chan mailer.Result, 20),
+		API:         os.Getenv("MAILER_API"),
+		APIKey:      os.Getenv("MAILER_KEY"),
+		APIUrl:      os.Getenv("MAILER_URL"),
+	}
+	return m
 }
 
 func (g *Gosnel) createClientRedisCache() *cache.RedisCache {
