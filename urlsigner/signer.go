@@ -12,7 +12,7 @@ type Signer struct {
 	Secret []byte
 }
 
-// GenerateTokenFromString - generates a token for string type data
+// GenerateTokenFromString generates a token for string type data
 func (s *Signer) GenerateTokenFromString(data string) string {
 	var urlToSign string
 
@@ -25,13 +25,13 @@ func (s *Signer) GenerateTokenFromString(data string) string {
 		urlToSign = fmt.Sprintf("%s?hash=", data)
 	}
 
-	// sign and return a token
+	// sign and return a token (the token will be appended to the end of url)
 	tokenBytes := crypt.Sign([]byte(urlToSign))
 	token := string(tokenBytes)
 	return token
 }
 
-// VerifyToken - unsigns the token to verify it and returns true if valid
+// VerifyToken unsigns the token to verify it and returns true if valid
 func (s *Signer) VerifyToken(token string) bool {
 	// create a new signer using secret
 	crypt := goalone.New(s.Secret, goalone.Timestamp)
@@ -44,7 +44,7 @@ func (s *Signer) VerifyToken(token string) bool {
 	return true
 }
 
-// IsExpired - returns true when the token is expired
+// IsExpired returns true when the token is expired
 func (s *Signer) IsExpired(token string, minutesUntilExpire int) bool {
 	// create a new signer using secret
 	crypt := goalone.New(s.Secret, goalone.Timestamp)
