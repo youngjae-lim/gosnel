@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -137,7 +137,7 @@ func (m *Mail) addAPIAttachments(msg Message, tx *apimail.Transmission) error {
 
 		for _, x := range msg.Attachments {
 			var attach apimail.Attachment
-			content, err := ioutil.ReadFile(x)
+			content, err := os.ReadFile(x)
 			if err != nil {
 				return err
 			}
