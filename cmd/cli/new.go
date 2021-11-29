@@ -23,7 +23,7 @@ func doNew(appName string) {
 	// git clone the skeleton application
 	color.Green("\tCloning repository...")
 	_, err := git.PlainClone("./" + appName, false, &git.CloneOptions{
-		URL: "git@github.com/youngjae-lim/gosnel-app.git",
+		URL: "https://github.com/youngjae-lim/gosnel-app.git",
 		Progress: os.Stdout,
 		Depth: 1,
 	})

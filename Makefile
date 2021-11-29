@@ -13,3 +13,7 @@ coverage:
 ## build_cli: builds the command line tool gosnel and copies it to myapp
 build_cli:
 	@go build -o ../myapp/gosnel ./cmd/cli
+
+## build: builds the command line tool gosnel to dist directory
+build:
+	@go build -o ./dist/gosnel ./cmd/cli

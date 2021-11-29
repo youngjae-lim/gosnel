@@ -9,19 +9,21 @@ import (
 )
 
 // setup sets a rootpath of cli application and database type(postgres or mysql)
-func setup() {
-	err := godotenv.Load()
-	if err != nil {
-		exitGracefully(err)
-	}
+func setup(arg1, arg2 string) {
+	if arg1 != "new" && arg1 != "version" && arg1 != "help" {
+		err := godotenv.Load()
+		if err != nil {
+			exitGracefully(err)
+		}
 
-	path, err := os.Getwd()
-	if err != nil {
-		exitGracefully(err)
-	}
+		path, err := os.Getwd()
+		if err != nil {
+			exitGracefully(err)
+		}
 
-	gos.RootPath = path
-	gos.DB.DbType = os.Getenv("DATABASE_TYPE")
+		gos.RootPath = path
+		gos.DB.DbType = os.Getenv("DATABASE_TYPE")
+	}
 }
 
 func getDSN() string {
