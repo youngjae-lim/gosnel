@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"runtime"
 	"strings"
 
@@ -125,6 +126,19 @@ func doNew(appName string) {
 	os.Chdir("./" + appName)
 	updateSource()
 
-	// run do mod tidy in the project directory
+	// run 'go mod tidy' in the project directory
 
+	// 'go mod tidy' ensures that the go.mod file matches the source code in the module.
+	// It adds any missing module requirements necessary to build the current module’s packages
+	// and dependencies, and it removes requirements on modules that don’t provide any relevant
+	// packages. It also adds any missing entries to go.sum and removes unnecessary entries.
+	color.Yellow("\tRunning go mod tidy...")
+	cmd := exec.Command("go", "mod", "tidy")
+	err = cmd.Start()
+	if err != nil {
+		exitGracefully(err)
+	}
+
+	color.Green("Done building " + appURL)
+	color.Green("Go build something awesome!!!")
 }
