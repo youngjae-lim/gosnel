@@ -17,3 +17,6 @@ build_cli:
 ## build: builds the command line tool gosnel to dist directory
 build:
 	@go build -o ./dist/gosnel ./cmd/cli
+
+install_cli:
+	@go build -o ~/go/bin/gosnel -ldflags '-s -w' ./cmd/cli
