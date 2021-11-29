@@ -22,13 +22,15 @@ import (
 	"github.com/youngjae-lim/gosnel/session"
 )
 
-const version = "1.0.0"
+const version = "0.1.0"
 
 var myRedisCache *cache.RedisCache
 var myBadgerCache *cache.BadgerCache
 var redisPool *redis.Pool
 var badgerConn *badger.DB
 
+// Gosenl is the overall type for the Celeritas package.
+// Members that are exported in this type are available to any application that uses it.
 type Gosnel struct {
 	AppName       string
 	Debug         bool
@@ -65,6 +67,8 @@ type config struct {
 	redis       redisConfig
 }
 
+// New reads the .env file, creates our application config, populates the Gosnel type with settings
+// based on .env values, and creates necessary folders and files if they don't exist
 func (g *Gosnel) New(rootPath string) error {
 	pathConfig := initPaths{
 		rootPath:    rootPath,
@@ -361,6 +365,15 @@ func (g *Gosnel) BuildDSN() string {
 		if os.Getenv("DATABASE_PASS") != "" {
 			dsn = fmt.Sprintf("%s password=%s", dsn, os.Getenv("DATABASE_PASS"))
 		}
+
+	case "mysql", "mariadb":
+		dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?collation=utf8_unicode_ci&timeout=5s&parseTime=true&tls=%s&readTimeout=5s",
+			os.Getenv("DATABASE_USER"),
+			os.Getenv("DATABASE_PASS"),
+			os.Getenv("DATABASE_HOST"),
+			os.Getenv("DATABASE_PORT"),
+			os.Getenv("DATABASE_NAME"),
+			os.Getenv("DATABASE_SSL_MODE"))
 
 	default:
 	}

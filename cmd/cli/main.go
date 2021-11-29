@@ -8,7 +8,7 @@ import (
 	"github.com/youngjae-lim/gosnel"
 )
 
-const version = "1.0.0"
+const version = "0.1.0"
 
 var gos gosnel.Gosnel
 
