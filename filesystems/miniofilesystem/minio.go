@@ -33,6 +33,7 @@ func (m *Minio) getCredentials() *minio.Client {
 	return client
 }
 
+// Put puts a file to a Minio remote file system.
 func (m *Minio) Put(fileName, folder string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -54,6 +55,7 @@ func (m *Minio) Put(fileName, folder string) error {
 	return nil
 }
 
+// List returns a list of all contents of a given bucket in the minio remote file system.
 func (m *Minio) List(prefix string) ([]filesystems.Listing, error) {
 	var listing []filesystems.Listing
 
@@ -96,4 +98,26 @@ func (m *Minio) List(prefix string) ([]filesystems.Listing, error) {
 	}
 
 	return listing, nil
+}
+
+func (m *Minio) Delete(itemsToDelete []string) bool {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// get a minio client
+	client := m.getCredentials()
+
+	opts := minio.RemoveObjectOptions{
+		GovernanceBypass: true,
+	}
+
+	for _, item := range itemsToDelete {
+		err := client.RemoveObject(ctx, m.Bucket, item, opts)
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
+	}
+
+	return true
 }
