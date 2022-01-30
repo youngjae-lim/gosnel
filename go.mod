@@ -78,6 +78,7 @@ require (
 	github.com/gomodule/redigo v1.8.5 // indirect
 	github.com/google/flatbuffers v2.0.0+incompatible // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/iancoleman/strcase v0.2.0 // indirect
@@ -87,7 +88,11 @@ require (
 	github.com/justinas/nosurf v1.1.1 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
+	github.com/klauspost/cpuid v1.3.1 // indirect
 	github.com/mailgun/mailgun-go/v4 v4.4.1 // indirect
+	github.com/minio/md5-simd v1.1.0 // indirect
+	github.com/minio/minio-go/v7 v7.0.21 // indirect
+	github.com/minio/sha256-simd v0.1.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
@@ -99,6 +104,7 @@ require (
 	github.com/ory/dockertest/v3 v3.8.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/robfig/cron/v3 v3.0.0 // indirect
+	github.com/rs/xid v1.2.1 // indirect
 	github.com/sendgrid/rest v2.6.3+incompatible // indirect
 	github.com/sendgrid/sendgrid-go v3.8.0+incompatible // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
@@ -114,6 +120,7 @@ require (
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.0.0-20211013171255-e13a2654a71e // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
+	gopkg.in/ini.v1 v1.57.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
