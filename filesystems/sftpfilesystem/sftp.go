@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/pkg/sftp"
 	"github.com/youngjae-lim/gosnel/filesystems"
@@ -45,6 +46,7 @@ func (s *SFTP) getCredentials() (*sftp.Client, error) {
 	return client, nil
 }
 
+// TODO: folder arg is not being used for now.
 func (s *SFTP) Put(fileName, folder string) error {
 	client, err := s.getCredentials()
 	if err != nil {
@@ -73,6 +75,33 @@ func (s *SFTP) Put(fileName, folder string) error {
 
 func (s *SFTP) List(prefix string) ([]filesystems.Listing, error) {
 	var listing []filesystems.Listing
+
+	client, err := s.getCredentials()
+	if err != nil {
+		return listing, err
+	}
+	defer client.Close()
+
+	files, err := client.ReadDir(prefix)
+	if err != nil {
+		return listing, err
+	}
+
+	for _, x := range files {
+		var item filesystems.Listing
+
+		if !strings.HasPrefix(x.Name(), ".") {
+			b := float64(x.Size())
+			kb := b / 1024
+			mb := kb / 1024
+			item.Key = x.Name()
+			item.Size = mb
+			item.LastModified = x.ModTime()
+			item.IsDir = x.IsDir()
+			listing = append(listing, item)
+		}
+	}
+
 	return listing, nil
 }
 
