@@ -21,6 +21,7 @@ type Minio struct {
 	Bucket   string
 }
 
+// getCredentials gets a minio client.
 func (m *Minio) getCredentials() *minio.Client {
 	client, err := minio.New(m.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(m.Key, m.Secret, ""),
@@ -100,6 +101,7 @@ func (m *Minio) List(prefix string) ([]filesystems.Listing, error) {
 	return listing, nil
 }
 
+// Delete deletes a list of files in a given bucket of the minio remote file system.
 func (m *Minio) Delete(itemsToDelete []string) bool {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -108,6 +110,7 @@ func (m *Minio) Delete(itemsToDelete []string) bool {
 	client := m.getCredentials()
 
 	opts := minio.RemoveObjectOptions{
+		// set the bypass governance header to delete an object locked with GOVERNANCE mode
 		GovernanceBypass: true,
 	}
 
@@ -120,4 +123,23 @@ func (m *Minio) Delete(itemsToDelete []string) bool {
 	}
 
 	return true
+}
+
+// Get downloads contents of an object to a local file.
+func (m *Minio) Get(destination string, items ...string) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// get a minio client
+	client := m.getCredentials()
+
+	for _, item := range items {
+		err := client.FGetObject(ctx, m.Bucket, item, fmt.Sprintf("%s/%s", destination, path.Base(item)), minio.GetObjectOptions{})
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+	}
+
+	return nil
 }
