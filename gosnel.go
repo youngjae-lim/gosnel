@@ -403,7 +403,7 @@ func (g *Gosnel) createFileSystems() map[string]interface{} {
 			Bucket:   os.Getenv("MINIO_BUCKET"),
 		}
 		fileSystems["MINIO"] = minio
-
-		return fileSystems
 	}
+
+	return fileSystems
 }

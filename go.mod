@@ -13,6 +13,8 @@ require (
 
 require github.com/alexedwards/scs/v2 v2.4.0
 
+require github.com/kr/fs v0.1.0 // indirect
+
 require (
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
@@ -103,6 +105,7 @@ require (
 	github.com/opencontainers/runc v1.0.2 // indirect
 	github.com/ory/dockertest/v3 v3.8.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pkg/sftp v1.13.4
 	github.com/robfig/cron/v3 v3.0.0 // indirect
 	github.com/rs/xid v1.2.1 // indirect
 	github.com/sendgrid/rest v2.6.3+incompatible // indirect
