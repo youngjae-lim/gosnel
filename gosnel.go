@@ -17,6 +17,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
 	"github.com/youngjae-lim/gosnel/cache"
+	"github.com/youngjae-lim/gosnel/filesystems/miniofilesystem"
 	"github.com/youngjae-lim/gosnel/mailer"
 	"github.com/youngjae-lim/gosnel/render"
 	"github.com/youngjae-lim/gosnel/session"
@@ -29,7 +30,7 @@ var myBadgerCache *cache.BadgerCache
 var redisPool *redis.Pool
 var badgerConn *badger.DB
 
-// Gosenl is the overall type for the Celeritas package.
+// Gosenl is the overall type for the gosnel package.
 // Members that are exported in this type are available to any application that uses it.
 type Gosnel struct {
 	AppName       string
@@ -49,6 +50,7 @@ type Gosnel struct {
 	Scheduler     *cron.Cron
 	Mail          mailer.Mail
 	Server        Server
+	FileSystems   map[string]interface{}
 }
 
 type Server struct {
@@ -210,6 +212,7 @@ func (g *Gosnel) New(rootPath string) error {
 	}
 
 	g.createRenderer()
+	g.FileSystems = g.createFileSystems()
 	go g.Mail.ListenForMail()
 
 	return nil
@@ -379,4 +382,28 @@ func (g *Gosnel) BuildDSN() string {
 	}
 
 	return dsn
+}
+
+func (g *Gosnel) createFileSystems() map[string]interface{} {
+	fileSystems := make(map[string]interface{})
+
+	if os.Getenv("MINIO_SECRET") != "" {
+		useSSL := false
+
+		if strings.ToLower(os.Getenv("MINIO_USESSL")) == "true" {
+			useSSL = true
+		}
+
+		minio := miniofilesystem.Minio{
+			Endpoint: os.Getenv("MINIO_ENDPOINT"),
+			Key:      os.Getenv("MINIO_KEY"),
+			Secret:   os.Getenv("MINIO_SECRET"),
+			UseSSL:   useSSL,
+			Region:   os.Getenv("MINIO_REGION"),
+			Bucket:   os.Getenv("MINIO_BUCKET"),
+		}
+		fileSystems["MINIO"] = minio
+
+		return fileSystems
+	}
 }
