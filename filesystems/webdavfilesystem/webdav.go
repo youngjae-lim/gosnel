@@ -2,6 +2,7 @@ package webdavfilesystem
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"strings"
@@ -30,6 +31,8 @@ func (w *WebDAV) Put(fileName, folder string) error {
 	}
 	defer file.Close()
 
+	// FIX: there is an error or bug on this line: I might have to use Write instead of WriteStream
+	// https://github.com/studio-b12/gowebdav#upload-file-from-byte-array
 	err = client.WriteStream(fmt.Sprintf("%s/%s", folder, path.Base(fileName)), file, 0644)
 	if err != nil {
 		return err
@@ -65,9 +68,47 @@ func (w *WebDAV) List(prefix string) ([]filesystems.Listing, error) {
 }
 
 func (w *WebDAV) Delete(itemsToDelete []string) bool {
+	client := w.getCredentials()
+
+	for _, item := range itemsToDelete {
+		err := client.Remove(item)
+		if err != nil {
+			return false
+		}
+	}
 	return true
 }
 
+// Get retrieves file(s) from the remote file system
 func (w *WebDAV) Get(destination string, items ...string) error {
+	client := w.getCredentials()
+
+	for _, item := range items {
+		err := func() error {
+			webdavFilePath := item
+			localFilePath := fmt.Sprintf("%s/%s", destination, path.Base(item))
+
+			reader, err := client.ReadStream(webdavFilePath)
+			if err != nil {
+				return err
+			}
+
+			file, err := os.Create(localFilePath)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			_, err = io.Copy(file, reader)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		}()
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

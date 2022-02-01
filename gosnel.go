@@ -19,6 +19,7 @@ import (
 	"github.com/youngjae-lim/gosnel/cache"
 	"github.com/youngjae-lim/gosnel/filesystems/miniofilesystem"
 	"github.com/youngjae-lim/gosnel/filesystems/sftpfilesystem"
+	"github.com/youngjae-lim/gosnel/filesystems/webdavfilesystem"
 	"github.com/youngjae-lim/gosnel/mailer"
 	"github.com/youngjae-lim/gosnel/render"
 	"github.com/youngjae-lim/gosnel/session"
@@ -414,6 +415,15 @@ func (g *Gosnel) createFileSystems() map[string]interface{} {
 			Port: os.Getenv("SFTP_PORT"),
 		}
 		fileSystems["SFTP"] = sftp
+	}
+
+	if os.Getenv("WEBDAV_HOST") != "" {
+		webDav := webdavfilesystem.WebDAV{
+			Host: os.Getenv("WEBDAV_HOST"),
+			User: os.Getenv("WEBDAV_USER"),
+			Pass: os.Getenv("WEBDAV_PASS"),
+		}
+		fileSystems["WEBDAV"] = webDav
 	}
 
 	return fileSystems
