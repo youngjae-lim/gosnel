@@ -13,7 +13,10 @@ require (
 
 require github.com/alexedwards/scs/v2 v2.4.0
 
-require github.com/kr/fs v0.1.0 // indirect
+require (
+	github.com/kr/fs v0.1.0 // indirect
+	github.com/studio-b12/gowebdav v0.0.0-20220128162035-c7b1ff8a5e62 // indirect
+)
 
 require (
 	github.com/fatih/color v1.13.0 // indirect
