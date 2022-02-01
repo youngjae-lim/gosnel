@@ -25,15 +25,27 @@ func (w *WebDAV) getCredentials() *gowebdav.Client {
 func (w *WebDAV) Put(fileName, folder string) error {
 	client := w.getCredentials()
 
-	file, err := os.Open(fileName)
+	// upload file via wirter
+	// file, err := os.Open(fileName)
+	// if err != nil {
+	// 	return err
+	// }
+	// defer file.Close()
+	//
+	// // FIX: there is an error or bug on this line: I might have to use Write instead of WriteStream
+	// // https://github.com/studio-b12/gowebdav#upload-file-from-byte-array
+	// err = client.WriteStream(fmt.Sprintf("%s/%s", folder, path.Base(fileName)), file, 0644)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// upload file from byte array
+	bytes, err := os.ReadFile(fileName)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 
-	// FIX: there is an error or bug on this line: I might have to use Write instead of WriteStream
-	// https://github.com/studio-b12/gowebdav#upload-file-from-byte-array
-	err = client.WriteStream(fmt.Sprintf("%s/%s", folder, path.Base(fileName)), file, 0644)
+	err = client.Write(fmt.Sprintf("%s/%s", folder, path.Base(fileName)), bytes, 0644)
 	if err != nil {
 		return err
 	}
