@@ -125,7 +125,7 @@ func (m *Minio) Delete(itemsToDelete []string) bool {
 	return true
 }
 
-// Get downloads contents of an object to a local file.
+// Get downloads contents of an object from a remote file system to the server where myapp is running
 func (m *Minio) Get(destination string, items ...string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
