@@ -18,6 +18,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"github.com/youngjae-lim/gosnel/cache"
 	"github.com/youngjae-lim/gosnel/filesystems/miniofilesystem"
+	"github.com/youngjae-lim/gosnel/filesystems/sftpfilesystem"
 	"github.com/youngjae-lim/gosnel/mailer"
 	"github.com/youngjae-lim/gosnel/render"
 	"github.com/youngjae-lim/gosnel/session"
@@ -403,6 +404,16 @@ func (g *Gosnel) createFileSystems() map[string]interface{} {
 			Bucket:   os.Getenv("MINIO_BUCKET"),
 		}
 		fileSystems["MINIO"] = minio
+	}
+
+	if os.Getenv("SFTP_HOST") != "" {
+		sftp := sftpfilesystem.SFTP{
+			Host: os.Getenv("SFTP_HOST"),
+			User: os.Getenv("SFTP_USER"),
+			Pass: os.Getenv("SFTP_PASS"),
+			Port: os.Getenv("SFTP_PORT"),
+		}
+		fileSystems["SFTP"] = sftp
 	}
 
 	return fileSystems
