@@ -20,6 +20,7 @@ func (g *Gosnel) UploadFile(r *http.Request, destination, field string, fs files
 	}
 
 	if fs != nil { // remote file system
+		// upload the file to the destination
 		err = fs.Put(fileName, destination)
 		if err != nil {
 			g.ErrorLog.Println(err)
@@ -39,7 +40,7 @@ func (g *Gosnel) UploadFile(r *http.Request, destination, field string, fs files
 // getFileToUpload checks if the mime type of file to be uploaded is valid and returns a file path & name
 // example: ./tmp/your_file.jpeg
 func (g *Gosnel) getFileToUpload(r *http.Request, fieldName string) (string, error) {
-	_ = r.ParseMultipartForm(10 << 20) // up to 20mb
+	_ = r.ParseMultipartForm(g.config.upload.maxUploadSize) // up to 10mb
 
 	file, header, err := r.FormFile(fieldName)
 	if err != nil {
@@ -59,16 +60,8 @@ func (g *Gosnel) getFileToUpload(r *http.Request, fieldName string) (string, err
 		return "", err
 	}
 
-	// only allowed mime types
-	validMimeTypes := []string{
-		"image/gif",
-		"image/jpeg",
-		"image/png",
-		"application/pdf",
-	}
-
 	// check if the mime type  is valid
-	if !inSlice(validMimeTypes, mimeType.String()) {
+	if !inSlice(g.config.upload.allowedMimeTypes, mimeType.String()) {
 		return "", errors.New("invalid file type uploaded")
 	}
 

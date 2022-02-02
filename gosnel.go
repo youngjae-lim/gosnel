@@ -74,6 +74,12 @@ type config struct {
 	sessionType string
 	database    databaseConfig
 	redis       redisConfig
+	upload      uploadConfig
+}
+
+type uploadConfig struct {
+	allowedMimeTypes []string
+	maxUploadSize    int64
 }
 
 // New reads the .env file, creates our application config, populates the Gosnel type with settings
@@ -150,6 +156,21 @@ func (g *Gosnel) New(rootPath string) error {
 	g.Mail = g.createMailer()
 	g.Routes = g.routes().(*chi.Mux)
 
+	// upload config - mimetypes and max upload size
+	exploaded := strings.Split(os.Getenv("ALLOWED_MIMETYPES"), ",")
+	var mimeTypes []string
+	for _, m := range exploaded {
+		mimeTypes = append(mimeTypes, m)
+	}
+
+	var maxUploadSize int64
+	if max, err := strconv.Atoi(os.Getenv("MAX_UPLOAD_SIZE")); err != nil {
+		maxUploadSize = 10 << 20 // 10mb
+	} else {
+		maxUploadSize = int64(max)
+	}
+
+	// set config
 	g.config = config{
 		port:     os.Getenv("PORT"),
 		renderer: os.Getenv("RENDERER"),
@@ -169,6 +190,10 @@ func (g *Gosnel) New(rootPath string) error {
 			host:     os.Getenv("REDIS_HOST"),
 			password: os.Getenv("REDIS_PASSWORD"),
 			prefix:   os.Getenv("REDIS_PREFIX"),
+		},
+		upload: uploadConfig{
+			allowedMimeTypes: mimeTypes,
+			maxUploadSize:    maxUploadSize,
 		},
 	}
 
