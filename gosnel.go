@@ -54,6 +54,10 @@ type Gosnel struct {
 	Mail          mailer.Mail
 	Server        Server
 	FileSystems   map[string]interface{}
+	S3            s3filesystem.S3
+	SFTP          sftpfilesystem.SFTP
+	WebDAV        webdavfilesystem.WebDAV
+	Minio         miniofilesystem.Minio
 }
 
 type Server struct {
@@ -399,6 +403,7 @@ func (g *Gosnel) createFileSystems() map[string]interface{} {
 			Bucket:   os.Getenv("S3_BUCKET"),
 		}
 		fileSystems["S3"] = s3
+		g.S3 = s3
 	}
 
 	if os.Getenv("MINIO_SECRET") != "" {
@@ -417,6 +422,7 @@ func (g *Gosnel) createFileSystems() map[string]interface{} {
 			Bucket:   os.Getenv("MINIO_BUCKET"),
 		}
 		fileSystems["MINIO"] = minio
+		g.Minio = minio
 	}
 
 	if os.Getenv("SFTP_HOST") != "" {
@@ -427,6 +433,7 @@ func (g *Gosnel) createFileSystems() map[string]interface{} {
 			Port: os.Getenv("SFTP_PORT"),
 		}
 		fileSystems["SFTP"] = sftp
+		g.SFTP = sftp
 	}
 
 	if os.Getenv("WEBDAV_HOST") != "" {
@@ -436,6 +443,7 @@ func (g *Gosnel) createFileSystems() map[string]interface{} {
 			Pass: os.Getenv("WEBDAV_PASS"),
 		}
 		fileSystems["WEBDAV"] = webDav
+		g.WebDAV = webDav
 	}
 
 	return fileSystems
