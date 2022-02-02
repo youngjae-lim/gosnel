@@ -67,7 +67,7 @@ func (s *S3) Put(fileName, folder string) error {
 		Bucket:      aws.String(s.Bucket),
 		Key:         aws.String(fmt.Sprintf("%s/%s", folder, path.Base(fileName))),
 		Body:        fileBytes,
-		ACL:         aws.String("public-read"),
+		ACL:         aws.String("public-read"), // Access Control List(Private, Authenticated Read, Public Read, Public Read/Write)
 		ContentType: aws.String(fileType),
 		Metadata: map[string]*string{
 			"Key": aws.String("MetadataValue"),
@@ -82,6 +82,11 @@ func (s *S3) Put(fileName, folder string) error {
 
 func (s *S3) List(prefix string) ([]filesystems.Listing, error) {
 	var listing []filesystems.Listing
+
+	// NOTE: s3 does not take care of "/" automatically like other remote file systems do
+	if prefix == "/" {
+		prefix = ""
+	}
 
 	c := s.getCredentials()
 

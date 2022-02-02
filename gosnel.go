@@ -18,6 +18,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"github.com/youngjae-lim/gosnel/cache"
 	"github.com/youngjae-lim/gosnel/filesystems/miniofilesystem"
+	"github.com/youngjae-lim/gosnel/filesystems/s3filesystem"
 	"github.com/youngjae-lim/gosnel/filesystems/sftpfilesystem"
 	"github.com/youngjae-lim/gosnel/filesystems/webdavfilesystem"
 	"github.com/youngjae-lim/gosnel/mailer"
@@ -388,6 +389,17 @@ func (g *Gosnel) BuildDSN() string {
 
 func (g *Gosnel) createFileSystems() map[string]interface{} {
 	fileSystems := make(map[string]interface{})
+
+	if os.Getenv("S3_KEY") != "" {
+		s3 := s3filesystem.S3{
+			Key:      os.Getenv("S3_KEY"),
+			Secret:   os.Getenv("S3_SECRET"),
+			Region:   os.Getenv("S3_REGION"),
+			Endpoint: os.Getenv("S3_ENDPOINT"),
+			Bucket:   os.Getenv("S3_BUCKET"),
+		}
+		fileSystems["S3"] = s3
+	}
 
 	if os.Getenv("MINIO_SECRET") != "" {
 		useSSL := false
