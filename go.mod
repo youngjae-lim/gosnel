@@ -14,6 +14,8 @@ require (
 require github.com/alexedwards/scs/v2 v2.4.0
 
 require (
+	github.com/aws/aws-sdk-go v1.42.44 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/studio-b12/gowebdav v0.0.0-20220128162035-c7b1ff8a5e62 // indirect
 )
@@ -124,7 +126,7 @@ require (
 	github.com/xhit/go-simple-mail/v2 v2.10.0 // indirect
 	github.com/yuin/gopher-lua v0.0.0-20200816102855-ee81675732da // indirect
 	go.opencensus.io v0.23.0 // indirect
-	golang.org/x/net v0.0.0-20211013171255-e13a2654a71e // indirect
+	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/ini.v1 v1.57.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

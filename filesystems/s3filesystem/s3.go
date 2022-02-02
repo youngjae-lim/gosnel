@@ -1,6 +1,20 @@
 package s3filesystem
 
-import "github.com/youngjae-lim/gosnel/filesystems"
+import (
+	"bytes"
+	"fmt"
+	"net/http"
+	"os"
+	"path"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/youngjae-lim/gosnel/filesystems"
+)
 
 type S3 struct {
 	Key      string
@@ -10,12 +24,109 @@ type S3 struct {
 	Bucket   string
 }
 
+func (s *S3) getCredentials() *credentials.Credentials {
+	c := credentials.NewStaticCredentials(s.Key, s.Secret, "")
+
+	return c
+}
+
 func (s *S3) Put(fileName, folder string) error {
+	c := s.getCredentials()
+
+	sess := session.Must(session.NewSession(&aws.Config{
+		Endpoint:    &s.Endpoint,
+		Region:      &s.Region,
+		Credentials: c,
+	}))
+
+	uploader := s3manager.NewUploader(sess)
+
+	f, err := os.Open(fileName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	fileInfo, err := f.Stat()
+	if err != nil {
+		return err
+	}
+
+	var size = fileInfo.Size()
+
+	buffer := make([]byte, size)
+	_, err = f.Read(buffer)
+	if err != nil {
+		return err
+	}
+
+	fileBytes := bytes.NewReader(buffer)
+	fileType := http.DetectContentType(buffer)
+
+	_, err = uploader.Upload(&s3manager.UploadInput{
+		Bucket:      aws.String(s.Bucket),
+		Key:         aws.String(fmt.Sprintf("%s/%s", folder, path.Base(fileName))),
+		Body:        fileBytes,
+		ACL:         aws.String("public-read"),
+		ContentType: aws.String(fileType),
+		Metadata: map[string]*string{
+			"Key": aws.String("MetadataValue"),
+		},
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (s *S3) List(prefix string) ([]filesystems.Listing, error) {
 	var listing []filesystems.Listing
+
+	c := s.getCredentials()
+
+	sess := session.Must(session.NewSession(&aws.Config{
+		Endpoint:    &s.Endpoint,
+		Region:      &s.Region,
+		Credentials: c,
+	}))
+
+	// create a new instance of s3 client with a session
+	svc := s3.New(sess)
+
+	input := &s3.ListObjectsV2Input{
+		Bucket: aws.String(s.Bucket),
+		Prefix: aws.String(prefix),
+	}
+
+	result, err := svc.ListObjectsV2(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case s3.ErrCodeNoSuchBucket:
+				fmt.Println(s3.ErrCodeNoSuchBucket, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			fmt.Println(err.Error())
+		}
+		return nil, err
+	}
+
+	for _, key := range result.Contents {
+		b := float64(*key.Size)
+		kb := b / 1024
+		mb := kb / 1024
+		current := filesystems.Listing{
+			Etag:         *key.ETag,
+			LastModified: *key.LastModified,
+			Key:          *key.Key,
+			Size:         mb,
+		}
+		listing = append(listing, current)
+	}
+
 	return listing, nil
 }
 
