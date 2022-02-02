@@ -131,6 +131,44 @@ func (s *S3) List(prefix string) ([]filesystems.Listing, error) {
 }
 
 func (s *S3) Delete(itemsToDelete []string) bool {
+	c := s.getCredentials()
+
+	sess := session.Must(session.NewSession(&aws.Config{
+		Endpoint:    &s.Endpoint,
+		Region:      &s.Region,
+		Credentials: c,
+	}))
+
+	svc := s3.New(sess)
+
+	for _, item := range itemsToDelete {
+		input := &s3.DeleteObjectsInput{
+			Bucket: aws.String(s.Bucket),
+			Delete: &s3.Delete{
+				Objects: []*s3.ObjectIdentifier{
+					{
+						Key: aws.String(item),
+					},
+				},
+				Quiet: aws.Bool(false),
+			},
+		}
+
+		_, err := svc.DeleteObjects(input)
+		if err != nil {
+			if aerr, ok := err.(awserr.Error); ok {
+				switch aerr.Code() {
+				default:
+					fmt.Println("aws error:", aerr.Error())
+					return false
+				}
+			} else {
+				fmt.Println("Other error:", err.Error())
+				return false
+			}
+		}
+	}
+
 	return true
 }
 
