@@ -36,6 +36,8 @@ func (g *Gosnel) UploadFile(r *http.Request, destination, field string, fs files
 	return nil
 }
 
+// getFileToUpload checks if the mime type of file to be uploaded is valid and returns a file path & name
+// example: ./tmp/your_file.jpeg
 func (g *Gosnel) getFileToUpload(r *http.Request, fieldName string) (string, error) {
 	_ = r.ParseMultipartForm(10 << 20) // up to 20mb
 
@@ -45,17 +47,19 @@ func (g *Gosnel) getFileToUpload(r *http.Request, fieldName string) (string, err
 	}
 	defer file.Close()
 
+	// NOTE: the DetectReader will move the reader offset that needes to be put back to the start of the file later.
 	mimeType, err := mimetype.DetectReader(file)
 	if err != nil {
 		return "", err
 	}
 
-	// go back to start of the file - i.e., move the reader offset at the start of the file
+	// move the reader offset to start of the file - i.e., move the reader offset at the start of the file
 	_, err = file.Seek(0, 0)
 	if err != nil {
 		return "", err
 	}
 
+	// only allowed mime types
 	validMimeTypes := []string{
 		"image/gif",
 		"image/jpeg",
@@ -63,16 +67,19 @@ func (g *Gosnel) getFileToUpload(r *http.Request, fieldName string) (string, err
 		"application/pdf",
 	}
 
+	// check if the mime type  is valid
 	if !inSlice(validMimeTypes, mimeType.String()) {
 		return "", errors.New("invalid file type uploaded")
 	}
 
+	// create a file to be uploaded in the ./tmp directory
 	dst, err := os.Create(fmt.Sprintf("./tmp/%s", header.Filename))
 	if err != nil {
 		return "", err
 	}
 	defer dst.Close()
 
+	// copy the file to the ./tmp directory
 	_, err = io.Copy(dst, file)
 	if err != nil {
 		return "", err
