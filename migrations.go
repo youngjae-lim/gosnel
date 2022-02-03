@@ -48,6 +48,27 @@ func (g *Gosnel) RunPopMigrations(tx *pop.Connection) error {
 	return nil
 }
 
+func (g *Gosnel) PopMigrateDown(tx *pop.Connection, steps ...int) error {
+	var migrationPath = g.RootPath + "/migrations"
+
+	step := 1
+	if len(steps) > 0 {
+		step = steps[0]
+	}
+
+	fm, err := pop.NewFileMigrator(migrationPath, tx)
+	if err != nil {
+		return err
+	}
+
+	err = fm.Down(step)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (g *Gosnel) MigrateUp(dsn string) error {
 	m, err := migrate.New("file://"+g.RootPath+"/migrations", dsn)
 	if err != nil {
