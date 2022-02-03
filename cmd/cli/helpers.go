@@ -62,6 +62,7 @@ func getDSN() string {
 	return "mysql://" + gos.BuildDSN()
 }
 
+// checkForDB makes app exit gracefully when database type is not set or database config file does not exist
 func checkForDB() {
 	dbType := gos.DB.DbType
 
