@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -61,6 +62,18 @@ func getDSN() string {
 	return "mysql://" + gos.BuildDSN()
 }
 
+func checkForDB() {
+	dbType := gos.DB.DbType
+
+	if dbType == "" {
+		exitGracefully(errors.New("no database connection provided in .env"))
+	}
+
+	if !fileExists(gos.RootPath + "/config/database.yml") {
+		exitGracefully(errors.New("config/database.yml does not exist"))
+	}
+}
+
 func showHelp() {
 	color.Yellow(`Available commands:
 
@@ -70,7 +83,7 @@ func showHelp() {
 	migrate down		- reverses the most recent migration
 	migrate reset		- runs all down migrations in reverse order, and then all up migrations
 	make auth		- creates and runs migrations for authentication tables, and creates models and middlewares
-	make migration <name> 	- creates two new up and down migrations in the /migrations folder
+	make migration <name> <format> 	- creates two new up and down migrations in the /migrations folder; format=sql/fizz (default fizz)
 	make handler <name>	- creates a stub handler in the /handlers directory
 	make model <name> 	- creates a new model in the /data directory
 	make session 		- creates a table in the database as a session store
