@@ -34,6 +34,11 @@ func (g *Gosnel) UploadFile(r *http.Request, destination, field string, fs files
 		}
 	}
 
+	// clean up the file from ./tmp directory
+	defer func() {
+		_ = os.Remove(fileName)
+	}()
+
 	return nil
 }
 
