@@ -1,35 +1,47 @@
 package main
 
 import (
-	"fmt"
-	"time"
-
 	"github.com/fatih/color"
 )
 
 func doAuth() error {
-	// migrations
+	// exit gracefully when database type is not set or database config file does not exist
+	checkForDB()
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////// start of migrations ///////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////
+
+	// get db type
 	dbType := gos.DB.DbType
 
-	fileName := fmt.Sprintf("%d_create_auth_tables", time.Now().UnixMicro())
-	upFile := gos.RootPath + "/migrations/" + fileName + ".up.sql"
-	downFile := gos.RootPath + "/migrations/" + fileName + ".down.sql"
+	tx, err := gos.PopConnect()
+	if err != nil {
+		exitGracefully(err)
+	}
+	defer tx.Close()
 
-	err := copyFileFromTemplate("templates/migrations/auth_tables."+dbType+".sql", upFile)
+	upBytes, err := templateFS.ReadFile("templates/migrations/auth_tables." + dbType + ".sql")
 	if err != nil {
 		exitGracefully(err)
 	}
 
-	err = copyDataToFile([]byte("drop table if exists users, tokens, remember_tokens cascade;"), downFile)
+	downBytes := []byte("drop table if exists users, tokens, remember_tokens cascade;")
+
+	err = gos.CreatePopMigration(upBytes, downBytes, "auth", "sql")
 	if err != nil {
 		exitGracefully(err)
 	}
 
 	// run up migrations
-	doMigrate("up", "")
+	err = gos.RunPopMigrations(tx)
 	if err != nil {
 		exitGracefully(err)
 	}
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////// end of migrations /////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////
 
 	// copy over data-related *.go files
 	err = copyFileFromTemplate("templates/data/user.go.txt", gos.RootPath+"/data/user.go")
@@ -70,12 +82,12 @@ func doAuth() error {
 	}
 
 	// copy over email templates for password reset mailers
-	err = copyFileFromTemplate("templates/mailers/password-reset.html.tmpl", gos.RootPath+"/mail/password-reset.html.tmpl")
+	err = copyFileFromTemplate("templates/mailer/password-reset.html.tmpl", gos.RootPath+"/mail/password-reset.html.tmpl")
 	if err != nil {
 		exitGracefully(err)
 	}
 
-	err = copyFileFromTemplate("templates/mailers/password-reset.text.tmpl", gos.RootPath+"/mail/password-reset.text.tmpl")
+	err = copyFileFromTemplate("templates/mailer/password-reset.text.tmpl", gos.RootPath+"/mail/password-reset.text.tmpl")
 	if err != nil {
 		exitGracefully(err)
 	}
@@ -95,8 +107,6 @@ func doAuth() error {
 	if err != nil {
 		exitGracefully(err)
 	}
-
-
 
 	color.Yellow("    - users, tokens, and remember_tokens migrations created and executed")
 	color.Yellow("    - user and token models created")

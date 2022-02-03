@@ -26,6 +26,7 @@ func (g *Gosnel) PopConnect() (*pop.Connection, error) {
 	return tx, nil
 }
 
+// CreatePopMigration creates up & down migration file(sql or fizz) in the /migrations directory.
 func (g *Gosnel) CreatePopMigration(up, down []byte, migrationName, migrationType string) error {
 	var migrationPath = g.RootPath + "/migrations"
 
