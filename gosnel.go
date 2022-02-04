@@ -3,7 +3,9 @@ package gosnel
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
+	"net/rpc"
 	"os"
 	"strconv"
 	"strings"
@@ -32,6 +34,7 @@ var myRedisCache *cache.RedisCache
 var myBadgerCache *cache.BadgerCache
 var redisPool *redis.Pool
 var badgerConn *badger.DB
+var maintenanceMode bool
 
 // Gosenl is the overall type for the gosnel package.
 // Members that are exported in this type are available to any application that uses it.
@@ -472,4 +475,46 @@ func (g *Gosnel) createFileSystems() map[string]interface{} {
 	}
 
 	return fileSystems
+}
+
+type RPCServer struct {
+}
+
+func (r *RPCServer) MaintenanceMode(inMaintenanceMode bool, resp *string) error {
+	if inMaintenanceMode {
+		maintenanceMode = true
+		*resp = "Server in maintenance mode"
+	} else {
+		maintenanceMode = false
+		*resp = "Server live!"
+	}
+
+	return nil
+}
+
+func (g *Gosnel) listenRPC() {
+	// if nothing specified for RPC port in .env, don't start
+	if os.Getenv("RPC_PORT") != "" {
+		g.InfoLog.Println("Starting RPC server on port", os.Getenv("RPC_PORT"))
+
+		err := rpc.Register(new(RPCServer))
+		if err != nil {
+			g.ErrorLog.Println(err)
+			return
+		}
+
+		listen, err := net.Listen("tcp", "127.0.0.1:"+os.Getenv("RPC_PORT"))
+		if err != nil {
+			g.ErrorLog.Println(err)
+			return
+		}
+
+		for {
+			rpcConn, err := listen.Accept()
+			if err != nil {
+				continue
+			}
+			go rpc.ServeConn(rpcConn)
+		}
+	}
 }
