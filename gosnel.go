@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 	"net/rpc"
 	"os"
 	"strconv"
@@ -264,34 +263,6 @@ func (g *Gosnel) Init(p initPaths) error {
 		}
 	}
 	return nil
-}
-
-// ListenAndServe starts the web server
-func (g *Gosnel) ListenAndServe() {
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
-		ErrorLog:     g.ErrorLog,
-		Handler:      g.Routes,
-		IdleTimeout:  30 * time.Second,
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 600 * time.Second,
-	}
-
-	if g.DB.Pool != nil {
-		defer g.DB.Pool.Close()
-	}
-
-	if redisPool != nil {
-		defer redisPool.Close()
-	}
-
-	if badgerConn != nil {
-		defer badgerConn.Close()
-	}
-
-	g.InfoLog.Printf("Listening on port %s", os.Getenv("PORT"))
-	err := srv.ListenAndServe()
-	g.ErrorLog.Fatal(err)
 }
 
 func (g *Gosnel) checkDotEnv(path string) error {

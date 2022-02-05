@@ -26,6 +26,12 @@ func main() {
 	case "help":
 		showHelp()
 
+	case "up":
+		rpcClient(false)
+
+	case "down":
+		rpcClient(true)
+
 	case "new":
 		if arg2 == "" {
 			exitGracefully(errors.New("new requires an application name"))

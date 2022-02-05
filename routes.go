@@ -17,6 +17,7 @@ func (g *Gosnel) routes() http.Handler {
 	mux.Use(middleware.Recoverer)
 	mux.Use(g.SessionLoad)
 	mux.Use(g.NoSurf)
+	mux.Use(g.CheckForMaintenanceMode)
 
 	return mux
 }
