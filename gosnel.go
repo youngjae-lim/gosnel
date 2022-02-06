@@ -89,7 +89,7 @@ type uploadConfig struct {
 func (g *Gosnel) New(rootPath string) error {
 	pathConfig := initPaths{
 		rootPath:    rootPath,
-		folderNames: []string{"handlers", "migrations", "views", "mail", "data", "public", "tmp", "logs", "middleware"},
+		folderNames: []string{"handlers", "migrations", "views", "mail", "data", "public", "tmp", "logs", "middleware", "screenshots"},
 	}
 
 	err := g.Init(pathConfig)

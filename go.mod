@@ -23,6 +23,7 @@ require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/cockroachdb/cockroach-go v2.0.1+incompatible // indirect
 	github.com/fatih/structs v1.1.0 // indirect
+	github.com/go-rod/rod v0.101.8 // indirect
 	github.com/gobuffalo/envy v1.10.1 // indirect
 	github.com/gobuffalo/fizz v1.14.0 // indirect
 	github.com/gobuffalo/flect v0.2.4 // indirect
@@ -50,6 +51,9 @@ require (
 	github.com/serenize/snaker v0.0.0-20201027110005-a7ad2135616e // indirect
 	github.com/sourcegraph/annotate v0.0.0-20160123013949-f4cad6c6324d // indirect
 	github.com/sourcegraph/syntaxhighlight v0.0.0-20170531221838-bd320f5d308e // indirect
+	github.com/ysmood/goob v0.3.0 // indirect
+	github.com/ysmood/gson v0.6.4 // indirect
+	github.com/ysmood/leakless v0.7.0 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 )
