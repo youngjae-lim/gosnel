@@ -1,12 +1,16 @@
 package main
 
 import (
+	"os"
+
 	"github.com/fatih/color"
 )
 
 func doAuth() error {
 	// exit gracefully when database type is not set or database config file does not exist
 	checkForDB()
+
+	appURL = os.Getenv("APP_NAME")
 
 	///////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////// start of migrations ///////////////////////////////
@@ -70,11 +74,13 @@ func doAuth() error {
 		exitGracefully(err)
 	}
 
+	// FIX: myapp/data is hardcoded that needes to be replaced with appURL
 	err = copyFileFromTemplate("templates/middleware/remember.go.txt", gos.RootPath+"/middleware/remember.go")
 	if err != nil {
 		exitGracefully(err)
 	}
 
+	// FIX: myapp/data is hardcoded that needes to be replaced with appURL
 	// copy over auth-handlers.go file
 	err = copyFileFromTemplate("templates/handlers/auth-handlers.go.txt", gos.RootPath+"/handlers/auth-handlers.go")
 	if err != nil {
@@ -107,6 +113,10 @@ func doAuth() error {
 	if err != nil {
 		exitGracefully(err)
 	}
+
+	// update default app name myapp to appURL(i.e., appName) for remember.go & auth-handlers.go
+	os.Chdir("./" + os.Getenv("APP_NAME"))
+	updateSource()
 
 	color.Yellow("    - users, tokens, and remember_tokens migrations created and executed")
 	color.Yellow("    - user and token models created")
