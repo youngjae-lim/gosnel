@@ -133,7 +133,14 @@ func doNew(appName string) {
 	// and dependencies, and it removes requirements on modules that don’t provide any relevant
 	// packages. It also adds any missing entries to go.sum and removes unnecessary entries.
 	color.Yellow("\tRunning go mod tidy...")
-	cmd := exec.Command("go", "mod", "tidy")
+
+	cmd := exec.Command("go", "get", "github.com/youngjae-lim/gosnel")
+	err = cmd.Start()
+	if err != nil {
+		exitGracefully(err)
+	}
+
+	cmd = exec.Command("go", "mod", "tidy")
 	err = cmd.Start()
 	if err != nil {
 		exitGracefully(err)
